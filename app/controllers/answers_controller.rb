@@ -13,8 +13,23 @@ class AnswersController < ApplicationController
   def show
     answer = Answer.find(params[:id])
     render json: answer, status: :ok
-  rescue ActiveRecord::RecordNotFound
-    render json: { errors: ["Answer not found"] }, status: :not_found
+  end
+
+  # Update an answer
+  def update
+    answer = Answer.find(params[:id])
+    if answer.update(answer_params)
+      render json: answer, status: :ok
+    else
+      render json: { errors: answer.errors.full_messages }, status: :bad_request
+    end
+  end
+
+  # Delete an answer
+  def destroy
+    answer = Answer.find(params[:id])
+    answer.destroy
+    head :no_content
   end
 
   private
