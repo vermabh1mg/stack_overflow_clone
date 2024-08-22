@@ -1,11 +1,11 @@
 class CommentsController < ApplicationController
   # Create a new comment
   def create
-    comment = Comment.new(comment_params)
-    if comment.save
+    begin
+      comment = Comment.create!(comment_params)
       render json: comment, status: :created
-    else
-      render json: { errors: comment.errors.full_messages }, status: :bad_request
+    rescue ActiveRecord::RecordInvalid => e
+      render json: { errors: e.record.errors.full_messages }, status: :bad_request
     end
   end
 
@@ -27,7 +27,7 @@ class CommentsController < ApplicationController
     comment.destroy
     render json: { message: "Comment deleted" }, status: :ok
   rescue ActiveRecord::RecordNotFound
-    render json: { errors: ["Comment not found"] }, status: :not_found
+    render json: { errors: [ "Comment not found" ] }, status: :not_found
   end
 
   private
@@ -36,8 +36,7 @@ class CommentsController < ApplicationController
     param! :comment, Hash do |c|
       c.param! :content, String, required: true
       c.param! :commentable_id, Integer, required: true
-      c.param! :commentable_type, String, required: true
-      c.param! :user_id, Integer, required: true
+      c.param! :commentable_type, String, required: true, in: [ "question", "answer" ]
     end
   end
 end

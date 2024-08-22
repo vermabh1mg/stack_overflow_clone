@@ -12,9 +12,9 @@ class QuestionsController < ApplicationController
   # Get a specific question by ID
   def show
     question = Question.find(params[:id])
-    render json: question, include: [:answers, :comments, :tags], status: :ok
+    render json: question, include: [ :answers, :comments, :tags ], status: :ok
   rescue ActiveRecord::RecordNotFound
-    render json: { errors: ["Question not found"] }, status: :not_found
+    render json: { errors: [ "Question not found" ] }, status: :not_found
   end
 
   # Update a question
