@@ -1,7 +1,9 @@
 Rails.application.routes.draw do
   resources :users, only: [ :create, :show ] do
-    get "questions", to: "users#user_questions"
-    get "answers", to: "users#user_answers"
+    member do
+      get "user_questions"
+      get "user_answers"
+    end
   end
 
   resources :questions do
@@ -15,12 +17,13 @@ Rails.application.routes.draw do
     resources :comments, only: [ :create ], module: :answers
   end
 
-  resources :comments, only: [ :update, :destroy ]
-
+  resources :comments, only: [ :create, :show, :update, :destroy ]
   resources :tags, only: [ :index, :create, :update, :destroy ]
 
   resources :votes, only: [] do
-    post "questions/:question_id", to: "votes#vote_on_question", on: :collection
-    post "answers/:answer_id", to: "votes#vote_on_answer", on: :collection
+    collection do
+      post "questions/:question_id", to: "votes#vote_on_question"
+      post "answers/:answer_id", to: "votes#vote_on_answer"
+    end
   end
 end

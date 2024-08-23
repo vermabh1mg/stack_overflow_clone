@@ -1,4 +1,5 @@
 class AnswersController < ApplicationController
+  skip_before_action :verify_authenticity_token, only: [ :create, :update, :destroy ]
   # Create a new answer
   def create
     answer = Answer.new(answer_params)
@@ -11,8 +12,14 @@ class AnswersController < ApplicationController
 
   # Get a specific answer by ID
   def show
-    answer = Answer.find(params[:id])
-    render json: answer, status: :ok
+    answer = Answer.with_deleted.find(params[:id])
+    if answer
+      render json: answer, status: :ok
+    else
+      render json: { errors: [ "Answer not found" ] }, status: :not_found
+    end
+  rescue ActiveRecord::RecordNotFound
+    render json: { errors: [ "Answer not found" ] }, status: :not_found
   end
 
   # Update an answer
@@ -35,10 +42,6 @@ class AnswersController < ApplicationController
   private
 
   def answer_params
-    param! :answer, Hash do |a|
-      a.param! :content, String, required: true
-      a.param! :question_id, Integer, required: true
-      a.param! :user_id, Integer, required: true
-    end
+    params.require(:answer).permit(:content, :question_id, :user_id)
   end
 end

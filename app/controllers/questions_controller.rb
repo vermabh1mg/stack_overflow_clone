@@ -1,4 +1,6 @@
 class QuestionsController < ApplicationController
+  skip_before_action :verify_authenticity_token, only: [ :create, :update, :destroy ]
+
   # Create a new question
   def create
     question = Question.new(question_params)
@@ -12,7 +14,7 @@ class QuestionsController < ApplicationController
   # Get a specific question by ID
   def show
     question = Question.find(params[:id])
-    render json: question, include: [ :answers, :comments, :tags ], status: :ok
+    render json: question, include: [ :answers, :comments, :tags, :votes ], status: :ok
   rescue ActiveRecord::RecordNotFound
     render json: { errors: [ "Question not found" ] }, status: :not_found
   end
@@ -26,15 +28,15 @@ class QuestionsController < ApplicationController
       render json: { errors: question.errors.full_messages }, status: :bad_request
     end
   rescue ActiveRecord::RecordNotFound
+    render json: { errors: [ "Question not found" ] }, status: :not_found
+  end
 
-    # Delete a question
-    def destroy
-      question = Question.find(params[:id])
-      question.destroy
-      head :no_content
-    rescue ActiveRecord::RecordNotFound
-      render json: { errors: [ "Question not found" ] }, status: :not_found
-    end
+  # Delete a question
+  def destroy
+    question = Question.find(params[:id])
+    question.destroy
+    head :no_content
+  rescue ActiveRecord::RecordNotFound
     render json: { errors: [ "Question not found" ] }, status: :not_found
   end
 
@@ -55,10 +57,6 @@ class QuestionsController < ApplicationController
   private
 
   def question_params
-    param! :question, Hash do |q|
-      q.param! :title, String, required: true
-      q.param! :content, String, required: true
-      q.param! :user_id, Integer, required: true
-    end
+    params.require(:question).permit(:title, :content, :user_id)
   end
 end

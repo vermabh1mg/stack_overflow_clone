@@ -1,4 +1,5 @@
 class UsersController < ApplicationController
+  skip_before_action :verify_authenticity_token, only: [ :create ]
   # Create a new user
   def create
     user = User.new(user_params)
@@ -36,8 +37,6 @@ class UsersController < ApplicationController
   private
 
   def user_params
-    param! :user, Hash do |u|
-      u.param! :username, String, required: true
-    end
+    params.require(:user).permit(:username)
   end
 end

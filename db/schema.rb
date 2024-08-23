@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2024_08_21_113535) do
+ActiveRecord::Schema[7.2].define(version: 2024_08_23_095240) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -52,6 +52,15 @@ ActiveRecord::Schema[7.2].define(version: 2024_08_21_113535) do
     t.datetime "updated_at", null: false
   end
 
+  create_table "tags_questions", force: :cascade do |t|
+    t.bigint "tag_id", null: false
+    t.bigint "question_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["question_id"], name: "index_tags_questions_on_question_id"
+    t.index ["tag_id"], name: "index_tags_questions_on_tag_id"
+  end
+
   create_table "users", force: :cascade do |t|
     t.string "username"
     t.datetime "created_at", null: false
@@ -73,5 +82,7 @@ ActiveRecord::Schema[7.2].define(version: 2024_08_21_113535) do
   add_foreign_key "answers", "users"
   add_foreign_key "comments", "users"
   add_foreign_key "questions", "users"
+  add_foreign_key "tags_questions", "questions"
+  add_foreign_key "tags_questions", "tags"
   add_foreign_key "votes", "users"
 end
