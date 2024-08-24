@@ -6,4 +6,3 @@ class Question < ApplicationRecord
   has_many :tags_questions
   has_many :tags, through: :tags_questions
 end
-
