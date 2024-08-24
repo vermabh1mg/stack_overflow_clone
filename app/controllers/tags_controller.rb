@@ -1,18 +1,14 @@
 class TagsController < ApplicationController
-  # List all tags
-  def index
-    tags = Tag.all
-    render json: tags, status: :ok
-  end
+  skip_before_action :verify_authenticity_token, only: [ :create, :update, :destroy ]
 
   # Create a new tag
   def create
-    tag = Tag.new(tag_params)
-    if tag.save
-      render json: tag, status: :created
-    else
-      render json: { errors: tag.errors.full_messages }, status: :bad_request
-    end
+    tag = Tag.create!(tag_params)
+    render json: tag, status: :created
+  rescue ActiveRecord::RecordInvalid => e
+    render json: { errors: e.record.errors.full_messages }, status: :unprocessable_entity
+  rescue StandardError => e
+    render json: { errors: [ e.message ] }, status: :unprocessable_entity
   end
 
   # Update a tag
@@ -31,7 +27,7 @@ class TagsController < ApplicationController
   def destroy
     tag = Tag.find(params[:id])
     tag.destroy
-    render json: { message: "Tag deleted" }, status: :ok
+    head :no_content
   rescue ActiveRecord::RecordNotFound
     render json: { errors: [ "Tag not found" ] }, status: :not_found
   end
@@ -39,8 +35,6 @@ class TagsController < ApplicationController
   private
 
   def tag_params
-    param! :tag, Hash do |t|
-      t.param! :name, String, required: true
-    end
+    params.require(:tag).permit(:name)
   end
 end

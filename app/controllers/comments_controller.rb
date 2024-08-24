@@ -1,13 +1,12 @@
 class CommentsController < ApplicationController
   skip_before_action :verify_authenticity_token, only: [ :create, :update, :destroy ]
+
   # Create a new comment
   def create
-    begin
-      comment = Comment.create!(comment_params)
-      render json: comment, status: :created
-    rescue ActiveRecord::RecordInvalid => e
-      render json: { errors: e.record.errors.full_messages }, status: :bad_request
-    end
+    comment = Comment.create!(comment_params)
+    render json: comment, status: :created
+  rescue ActiveRecord::RecordInvalid => e
+    render json: { errors: e.record.errors.full_messages }, status: :unprocessable_entity
   end
 
   # Update a comment
@@ -34,10 +33,6 @@ class CommentsController < ApplicationController
   private
 
   def comment_params
-    param! :comment, Hash do |c|
-      c.param! :content, String, required: true
-      c.param! :commentable_id, Integer, required: true
-      c.param! :commentable_type, String, required: true, in: [ "question", "answer" ]
-    end
+    params.require(:comment).permit(:content, :commentable_id, :commentable_type, :user_id)
   end
 end
